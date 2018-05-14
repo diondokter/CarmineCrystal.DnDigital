@@ -1,0 +1,3 @@
+[submodule "CarmineCrystal.Networking"]
+	path = CarmineCrystal.Networking
+	url = https://github.com/diondokter/CarmineCrystal.Networking.git
