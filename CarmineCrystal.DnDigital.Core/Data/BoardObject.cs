@@ -1,6 +1,7 @@
 ﻿using ProtoBuf;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -13,6 +14,7 @@ namespace CarmineCrystal.DnDigital.Core.Data
 		public static uint MaxID { get; private set; } = 0;
 		private static bool Initialized = false;
 		private static Dictionary<uint, BoardObject> Objects { get; set; }
+		public static ReadOnlyDictionary<uint, BoardObject> ReadOnlyObjects { get; private set; }
 
 		[ProtoMember(1)]
 		public readonly uint ID;
@@ -31,7 +33,16 @@ namespace CarmineCrystal.DnDigital.Core.Data
 				}
 			}
 		}
-		public Vector2 GlobalPosition => Parent?.GlobalPosition ?? Vector2.Zero + Vector2.Transform(Position, GlobalRotation);
+		public Vector2 GlobalPosition
+		{
+			get
+			{
+				Vector2 parentPosition = Parent?.GlobalPosition ?? Vector2.Zero;
+				Quaternion parentRotation = Parent?.GlobalRotation ?? Quaternion.Identity;
+				Vector2 localTransformedPosition = Vector2.Transform(Position, parentRotation);
+				return parentPosition + localTransformedPosition;
+			}
+		}
 		public event Action<BoardObject> PositionChanged;
 
 		[ProtoMember(3)]
@@ -90,9 +101,33 @@ namespace CarmineCrystal.DnDigital.Core.Data
 			get => ParentID != null ? Objects[ParentID.Value] : null;
 			set
 			{
+				if (ID == value?.ID)
+				{
+					throw new InvalidOperationException($"Cannot set a {nameof(BoardObject)} as its own parent.");
+				}
+
 				if (ParentID != value?.ID)
 				{
+					if (ParentID != null)
+					{
+						Parent.PositionChanged -= PositionChanged;
+						Parent.LevelChanged -= LevelChanged;
+						Parent.RotationChanged -= RotationChanged;
+						Parent.SizeChanged -= SizeChanged;
+						Parent.ParentChanged -= ParentChanged;
+					}
+
 					ParentID = value?.ID;
+
+					if (ParentID != null)
+					{
+						Parent.PositionChanged += PositionChanged;
+						Parent.LevelChanged += LevelChanged;
+						Parent.RotationChanged += RotationChanged;
+						Parent.SizeChanged += SizeChanged;
+						Parent.ParentChanged += ParentChanged;
+					}
+
 					ParentChanged?.Invoke(this);
 				}
 			}
@@ -101,10 +136,21 @@ namespace CarmineCrystal.DnDigital.Core.Data
 		public event Action<BoardObject> ParentChanged;
 
 
-		public static void Initialize(Dictionary<uint, BoardObject> objects)
+		public static void Initialize(Dictionary<uint, BoardObject> objects = null)
 		{
+			if (objects == null)
+			{
+				objects = new Dictionary<uint, BoardObject>();
+			}
+
 			Objects = objects;
-			MaxID = Objects.Max(x => x.Key) + 1;
+			ReadOnlyObjects = new ReadOnlyDictionary<uint, BoardObject>(objects);
+
+			if (Objects.Count > 0)
+			{
+				MaxID = Objects.Max(x => x.Key) + 1;
+			}
+
 			Initialized = true;
 		}
 
