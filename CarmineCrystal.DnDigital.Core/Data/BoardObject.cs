@@ -15,6 +15,7 @@ namespace CarmineCrystal.DnDigital.Core.Data
 		private static bool Initialized = false;
 		private static Dictionary<uint, BoardObject> Objects { get; set; }
 		public static ReadOnlyDictionary<uint, BoardObject> ReadOnlyObjects { get; private set; }
+		private static bool IsMaster;
 
 		[ProtoMember(1)]
 		public readonly uint ID;
@@ -135,13 +136,16 @@ namespace CarmineCrystal.DnDigital.Core.Data
 		public IEnumerable<BoardObject> Children => Objects.Select(x => x.Value).Where(x => x.ParentID == ID);
 		public event Action<BoardObject> ParentChanged;
 
+		public event Action<BoardObject> Destroyed;
 
-		public static void Initialize(Dictionary<uint, BoardObject> objects = null)
+		public static void Initialize(Dictionary<uint, BoardObject> objects = null, bool isMaster)
 		{
 			if (objects == null)
 			{
 				objects = new Dictionary<uint, BoardObject>();
 			}
+
+			IsMaster = isMaster;
 
 			Objects = objects;
 			ReadOnlyObjects = new ReadOnlyDictionary<uint, BoardObject>(objects);
@@ -154,11 +158,31 @@ namespace CarmineCrystal.DnDigital.Core.Data
 			Initialized = true;
 		}
 
-		public static BoardObject Create()
+		public static T Create<T>() where T: BoardObject
 		{
-			BoardObject newObject = new BoardObject(MaxID++);
+			if (!IsMaster)
+			{
+				throw new Exception("Program is not initialized as the master. Objects can only be added, not created.");
+			}
+
+			T newObject = (T)Activator.CreateInstance(typeof(T), MaxID++);
 			Objects[newObject.ID] = newObject;
 			return newObject;
+		}
+
+		public static void AddObject(BoardObject newObject)
+		{
+			if (IsMaster)
+			{
+				throw new Exception("Program is initialized as the master. Objects can only be created, not added.");
+			}
+
+			if (Objects.ContainsKey(newObject.ID))
+			{
+				throw new Exception($"A {nameof(BoardObject)} with the {nameof(ID)}: {newObject.ID} already exists.");
+			}
+
+			Objects[newObject.ID] = newObject;
 		}
 
 		/// <summary>
@@ -172,7 +196,7 @@ namespace CarmineCrystal.DnDigital.Core.Data
 			}
 		}
 
-		private BoardObject(uint id)
+		protected BoardObject(uint id)
 		{
 			if (!Initialized)
 			{
@@ -180,6 +204,26 @@ namespace CarmineCrystal.DnDigital.Core.Data
 			}
 
 			this.ID = id;
+		}
+
+		public void Destroy()
+		{
+			foreach(BoardObject child in Children)
+			{
+				child.Position += Position;
+				child.Rotation *= Rotation;
+				child.Parent = Parent;
+			}
+
+			Objects.Remove(ID);
+
+			PositionChanged = null;
+			LevelChanged = null;
+			RotationChanged = null;
+			SizeChanged = null;
+			ParentChanged = null;
+
+			Destroyed?.Invoke(this);
 		}
 	}
 }
