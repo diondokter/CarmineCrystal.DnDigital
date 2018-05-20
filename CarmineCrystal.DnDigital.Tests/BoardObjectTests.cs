@@ -14,8 +14,8 @@ namespace CarmineCrystal.DnDigital.Tests
 		{
 			BoardObject.Initialize(new Dictionary<uint, BoardObject>());
 
-			BoardObject parent = BoardObject.Create();
-			BoardObject child = BoardObject.Create();
+			BoardObject parent = BoardObject.Create<BoardObject>();
+			BoardObject child = BoardObject.Create<BoardObject>();
 
 			child.Parent = parent;
 
@@ -37,8 +37,8 @@ namespace CarmineCrystal.DnDigital.Tests
 		{
 			BoardObject.Initialize(new Dictionary<uint, BoardObject>());
 
-			BoardObject parent = BoardObject.Create();
-			BoardObject child = BoardObject.Create();
+			BoardObject parent = BoardObject.Create<BoardObject>();
+			BoardObject child = BoardObject.Create<BoardObject>();
 
 			child.Parent = parent;
 
@@ -56,8 +56,8 @@ namespace CarmineCrystal.DnDigital.Tests
 		{
 			BoardObject.Initialize(new Dictionary<uint, BoardObject>());
 
-			BoardObject parent = BoardObject.Create();
-			BoardObject child = BoardObject.Create();
+			BoardObject parent = BoardObject.Create<BoardObject>();
+			BoardObject child = BoardObject.Create<BoardObject>();
 
 			child.Parent = parent;
 
@@ -84,7 +84,7 @@ namespace CarmineCrystal.DnDigital.Tests
 		{
 			BoardObject.Initialize(new Dictionary<uint, BoardObject>());
 
-			BoardObject testObject = BoardObject.Create();
+			BoardObject testObject = BoardObject.Create<BoardObject>();
 
 			bool positionChanged = false;
 			bool levelChanged = false;
@@ -139,7 +139,7 @@ namespace CarmineCrystal.DnDigital.Tests
 			Assert.IsFalse(parentChanged);
 			ResetBools();
 
-			BoardObject parentObject = BoardObject.Create();
+			BoardObject parentObject = BoardObject.Create<BoardObject>();
 			testObject.Parent = parentObject;
 			Assert.IsFalse(positionChanged);
 			Assert.IsFalse(levelChanged);
@@ -222,7 +222,7 @@ namespace CarmineCrystal.DnDigital.Tests
 			Assert.IsFalse(parentChanged);
 			ResetBools();
 
-			BoardObject parent2Object = BoardObject.Create();
+			BoardObject parent2Object = BoardObject.Create<BoardObject>();
 			parentObject.Parent = parent2Object;
 			Assert.IsFalse(positionChanged);
 			Assert.IsFalse(levelChanged);

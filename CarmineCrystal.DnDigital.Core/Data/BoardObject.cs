@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Text;
 
 namespace CarmineCrystal.DnDigital.Core.Data
@@ -138,7 +139,7 @@ namespace CarmineCrystal.DnDigital.Core.Data
 
 		public event Action<BoardObject> Destroyed;
 
-		public static void Initialize(Dictionary<uint, BoardObject> objects = null, bool isMaster)
+		public static void Initialize(Dictionary<uint, BoardObject> objects = null, bool isMaster = true)
 		{
 			if (objects == null)
 			{
@@ -165,7 +166,7 @@ namespace CarmineCrystal.DnDigital.Core.Data
 				throw new Exception("Program is not initialized as the master. Objects can only be added, not created.");
 			}
 
-			T newObject = (T)Activator.CreateInstance(typeof(T), MaxID++);
+			T newObject = (T)Activator.CreateInstance(typeof(T), BindingFlags.NonPublic | BindingFlags.Instance, null, new object[] { MaxID++ }, null);
 			Objects[newObject.ID] = newObject;
 			return newObject;
 		}
