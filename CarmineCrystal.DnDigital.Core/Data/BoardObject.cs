@@ -1,4 +1,5 @@
 ﻿using ProtoBuf;
+using ProtoBuf.Meta;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -156,7 +157,41 @@ namespace CarmineCrystal.DnDigital.Core.Data
 				MaxID = Objects.Max(x => x.Key) + 1;
 			}
 
+			ProtoInitialize();
+
 			Initialized = true;
+		}
+
+		/// <summary>
+		/// Adds all child classes as protoincludes for BoardObject
+		/// </summary>
+		/// <param name="AdditionalAssemblies"></param>
+		private static void ProtoInitialize(params Assembly[] AdditionalAssemblies)
+		{
+			List<Assembly> TargetAssemblies = AdditionalAssemblies.ToList();
+			TargetAssemblies.Add(Assembly.GetExecutingAssembly());
+
+			TypeInfo[] MessageTypes = TargetAssemblies.SelectMany(x => x.DefinedTypes).Select(x => x.GetTypeInfo()).Where(x => x.IsSubclassOf(typeof(BoardObject))).ToArray();
+
+			Dictionary<Type, int> SubTypeCount = new Dictionary<Type, int>();
+
+			for (int i = 0; i < MessageTypes.Length; i++)
+			{
+				MetaType ProtobufType;
+
+				if (!SubTypeCount.ContainsKey(MessageTypes[i].BaseType))
+				{
+					ProtobufType = RuntimeTypeModel.Default.Add(MessageTypes[i].BaseType, true);
+					SubTypeCount[MessageTypes[i].BaseType] = 101;
+				}
+				else
+				{
+					ProtobufType = RuntimeTypeModel.Default[MessageTypes[i].BaseType];
+				}
+
+				ProtobufType.AddSubType(SubTypeCount[MessageTypes[i].BaseType], MessageTypes[i].AsType());
+				SubTypeCount[MessageTypes[i].BaseType]++;
+			}
 		}
 
 		public static T Create<T>() where T: BoardObject
