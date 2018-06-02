@@ -2,30 +2,35 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Text;
 
 namespace CarmineCrystal.DnDigital.Core.Data.Drawing
 {
 	[ProtoContract]
-    public class Line : ICollection<LinePoint>, IList<LinePoint>
+    public class Line : ICollection<LinePoint>, IList<LinePoint>, INotifyCollectionChanged
 	{
 		[ProtoMember(1)]
 		private readonly List<LinePoint> LinePoints = new List<LinePoint>();
 
-		public LinePoint this[int index] { get => ((IList<LinePoint>)LinePoints)[index]; set => ((IList<LinePoint>)LinePoints)[index] = value; }
+		public LinePoint this[int index] { get => LinePoints[index]; set => LinePoints[index] = value; }
 
-		public int Count => ((ICollection<LinePoint>)LinePoints).Count;
+		public int Count => LinePoints.Count;
 
 		public bool IsReadOnly => ((ICollection<LinePoint>)LinePoints).IsReadOnly;
+
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
 
 		public void Add(LinePoint item)
 		{
 			LinePoints.Add(item);
+			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
 		}
 
 		public void Clear()
 		{
 			LinePoints.Clear();
+			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 		}
 
 		public bool Contains(LinePoint item)
@@ -51,16 +56,25 @@ namespace CarmineCrystal.DnDigital.Core.Data.Drawing
 		public void Insert(int index, LinePoint item)
 		{
 			LinePoints.Insert(index, item);
+			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
 		}
 
 		public bool Remove(LinePoint item)
 		{
-			return LinePoints.Remove(item);
+			if (LinePoints.Remove(item))
+			{
+				CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+				return true;
+			}
+
+			return false;
 		}
 
 		public void RemoveAt(int index)
 		{
+			LinePoint point = LinePoints[index];
 			LinePoints.RemoveAt(index);
+			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, point, index));
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

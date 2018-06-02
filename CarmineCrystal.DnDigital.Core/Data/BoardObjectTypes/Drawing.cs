@@ -16,7 +16,7 @@ namespace CarmineCrystal.DnDigital.Core.Data.BoardObjectTypes
 
 		}
 
-		public void AddLine()
+		public void AddLine(Line )
 		{
 
 		}

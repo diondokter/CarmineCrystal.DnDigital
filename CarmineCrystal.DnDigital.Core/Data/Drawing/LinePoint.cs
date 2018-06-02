@@ -7,16 +7,16 @@ using System.Text;
 namespace CarmineCrystal.DnDigital.Core.Data.Drawing
 {
 	[ProtoContract]
-    public class LinePoint
+    public struct LinePoint
     {
 		[ProtoMember(1)]
-		public Vector2 Point;
+		public readonly Vector2 Point;
 		[ProtoMember(2)]
-		public float Pressure;
+		public readonly float Pressure;
 		[ProtoMember(3)]
-		public float TiltX;
+		public readonly float TiltX;
 		[ProtoMember(4)]
-		public float TiltY;
+		public readonly float TiltY;
 
 		public LinePoint(Vector2 point, float pressure, float tiltX, float tiltY)
 		{
@@ -24,14 +24,6 @@ namespace CarmineCrystal.DnDigital.Core.Data.Drawing
 			Pressure = pressure;
 			TiltX = tiltX;
 			TiltY = tiltY;
-		}
-
-		/// <summary>
-		/// Private constructor for protobuf.
-		/// </summary>
-		private LinePoint()
-		{
-
 		}
     }
 }
