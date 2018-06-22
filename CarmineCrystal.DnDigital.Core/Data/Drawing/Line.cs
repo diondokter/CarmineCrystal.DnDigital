@@ -2,68 +2,47 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Text;
 
 namespace CarmineCrystal.DnDigital.Core.Data.Drawing
 {
 	[ProtoContract]
-    public class Line : ICollection<LinePoint>, IList<LinePoint>, INotifyCollectionChanged
+    public class Line
 	{
 		[ProtoMember(1)]
-		private readonly List<LinePoint> LinePoints = new List<LinePoint>();
+		private readonly List<LinePoint> _LinePoints = new List<LinePoint>();
+		public ReadOnlyCollection<LinePoint> LinePoints => _LinePoints.AsReadOnly();
 
-		public LinePoint this[int index] { get => LinePoints[index]; set => LinePoints[index] = value; }
+		public event Action<Line, LinePoint> LinePointAdded;
+		public event Action<Line, LinePoint> LinePointRemoved;
 
-		public int Count => LinePoints.Count;
+		[ProtoMember(2)]
+		private Brush _Linebrush;
+		public Brush LineBrush
+		{
+			get => _Linebrush;
+			set
+			{
+				_Linebrush = value;
+				BrushChanged?.Invoke(this);
+			}
+		}
 
-		public bool IsReadOnly => ((ICollection<LinePoint>)LinePoints).IsReadOnly;
-
-		public event NotifyCollectionChangedEventHandler CollectionChanged;
+		public event Action<Line> BrushChanged;
 
 		public void Add(LinePoint item)
 		{
-			LinePoints.Add(item);
-			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
-		}
-
-		public void Clear()
-		{
-			LinePoints.Clear();
-			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-		}
-
-		public bool Contains(LinePoint item)
-		{
-			return LinePoints.Contains(item);
-		}
-
-		public void CopyTo(LinePoint[] array, int arrayIndex)
-		{
-			LinePoints.CopyTo(array, arrayIndex);
-		}
-
-		public IEnumerator<LinePoint> GetEnumerator()
-		{
-			return ((ICollection<LinePoint>)LinePoints).GetEnumerator();
-		}
-
-		public int IndexOf(LinePoint item)
-		{
-			return LinePoints.IndexOf(item);
-		}
-
-		public void Insert(int index, LinePoint item)
-		{
-			LinePoints.Insert(index, item);
-			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
+			_LinePoints.Add(item);
+			LinePointAdded?.Invoke(this, item);
 		}
 
 		public bool Remove(LinePoint item)
 		{
-			if (LinePoints.Remove(item))
+			if (_LinePoints.Remove(item))
 			{
-				CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+				LinePointRemoved?.Invoke(this, item);
 				return true;
 			}
 
@@ -72,14 +51,9 @@ namespace CarmineCrystal.DnDigital.Core.Data.Drawing
 
 		public void RemoveAt(int index)
 		{
-			LinePoint point = LinePoints[index];
-			LinePoints.RemoveAt(index);
-			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, point, index));
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return ((ICollection<LinePoint>)LinePoints).GetEnumerator();
+			LinePoint item = _LinePoints[index];
+			_LinePoints.RemoveAt(index);
+			LinePointRemoved?.Invoke(this, item);
 		}
 	}
 }
