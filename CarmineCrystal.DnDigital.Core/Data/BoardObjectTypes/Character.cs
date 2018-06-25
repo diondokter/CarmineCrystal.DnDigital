@@ -12,5 +12,11 @@ namespace CarmineCrystal.DnDigital.Core.Data.BoardObjectTypes
 		{
 
 		}
+
+		// Empty constructor fo protobuf
+		protected Character() : base()
+		{
+
+		}
 	}
 }

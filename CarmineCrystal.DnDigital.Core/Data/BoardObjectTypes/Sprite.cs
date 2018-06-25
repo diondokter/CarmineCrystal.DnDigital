@@ -6,7 +6,7 @@ using System.Text;
 namespace CarmineCrystal.DnDigital.Core.Data.BoardObjectTypes
 {
 	[ProtoContract]
-    public class Sprite : BoardObject
+    public abstract class Sprite : BoardObject
     {
 		[ProtoMember(1)]
 		private string _Source;
@@ -28,5 +28,11 @@ namespace CarmineCrystal.DnDigital.Core.Data.BoardObjectTypes
 		{
 
 		}
-    }
+
+		// Empty constructor fo protobuf
+		protected Sprite() : base()
+		{
+
+		}
+	}
 }

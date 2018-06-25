@@ -22,6 +22,12 @@ namespace CarmineCrystal.DnDigital.Core.Data.BoardObjectTypes
 
 		}
 
+		// Empty constructor fo protobuf
+		protected Drawing() : base()
+		{
+
+		}
+
 		public void AddLine(Line newLine)
 		{
 			_Lines.Add(newLine);

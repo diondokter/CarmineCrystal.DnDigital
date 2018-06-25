@@ -11,7 +11,7 @@ using System.Text;
 namespace CarmineCrystal.DnDigital.Core.Data
 {
 	[ProtoContract]
-	public class BoardObject
+	public abstract class BoardObject
 	{
 		public static uint MaxID { get; private set; } = 0;
 		private static bool Initialized = false;
@@ -224,7 +224,7 @@ namespace CarmineCrystal.DnDigital.Core.Data
 		/// <summary>
 		/// Constructor meant for Protobuf object deserialization
 		/// </summary>
-		private BoardObject()
+		protected BoardObject()
 		{
 			if (!Initialized)
 			{
